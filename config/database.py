@@ -52,7 +52,6 @@ DATABASE_URI = f'postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST
 # Create engine with optimized connection pooling for high concurrency
 engine = create_engine(
     DATABASE_URL,
-    DATABASE_URI,
     pool_pre_ping=True,  # Verify connections before using (prevents stale connections)
     pool_size=POOL_SIZE,  # Minimum number of connections in pool
     max_overflow=MAX_OVERFLOW,  # Additional connections beyond pool_size
