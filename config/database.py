@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 # Load environment variables
 env_path = os.path.join(os.path.dirname(__file__), '../.env')
-load_dotenv(env_path)
+load_dotenv(env_path, override=False)
 
 # Database URL (Railway provides this automatically)
 DATABASE_URL = os.getenv('DATABASE_URL')
