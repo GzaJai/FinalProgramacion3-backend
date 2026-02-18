@@ -26,39 +26,38 @@ logger = logging.getLogger(__name__)
 env_path = os.path.join(os.path.dirname(__file__), '../.env')
 load_dotenv(env_path)
 
+# Database URL (Railway provides this automatically)
 DATABASE_URL = os.getenv('DATABASE_URL')
 
-if DATABASE_URL and DATABASE_URL.startswith("posgres://"):
-    DATABASE_URL = DATABASE_URL("postgres://", "postgresql://", 1)
+# Fix Railway's "postgres://" -> "postgresql://" for SQLAlchemy
+if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-# Database configuration for local development
+# Fallback to individual variables for local development
 if not DATABASE_URL:
     POSTGRES_HOST = os.getenv('POSTGRES_HOST', 'localhost')
     POSTGRES_PORT = os.getenv('POSTGRES_PORT', '5432')
     POSTGRES_DB = os.getenv('POSTGRES_DB', 'postgres')
     POSTGRES_USER = os.getenv('POSTGRES_USER', 'postgres')
     POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD', 'postgres')
+    DATABASE_URL = f'postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}'
 
 # High-performance connection pool configuration
-# For 400 concurrent requests with 4 workers: 400/4 = 100 connections per worker
-# Pool size + max_overflow should handle peak load
-POOL_SIZE = int(os.getenv('DB_POOL_SIZE', '50'))  # Base pool size per worker
-MAX_OVERFLOW = int(os.getenv('DB_MAX_OVERFLOW', '100'))  # Additional connections during peak
-POOL_TIMEOUT = int(os.getenv('DB_POOL_TIMEOUT', '10'))  # Wait time for connection (reduced for production)
-POOL_RECYCLE = int(os.getenv('DB_POOL_RECYCLE', '3600'))  # Recycle connections after 1 hour
-
-DATABASE_URI = f'postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}'
+POOL_SIZE = int(os.getenv('DB_POOL_SIZE', '50'))
+MAX_OVERFLOW = int(os.getenv('DB_MAX_OVERFLOW', '100'))
+POOL_TIMEOUT = int(os.getenv('DB_POOL_TIMEOUT', '10'))
+POOL_RECYCLE = int(os.getenv('DB_POOL_RECYCLE', '3600'))
 
 # Create engine with optimized connection pooling for high concurrency
 engine = create_engine(
     DATABASE_URL,
-    pool_pre_ping=True,  # Verify connections before using (prevents stale connections)
-    pool_size=POOL_SIZE,  # Minimum number of connections in pool
-    max_overflow=MAX_OVERFLOW,  # Additional connections beyond pool_size
-    pool_timeout=POOL_TIMEOUT,  # Seconds to wait before giving up on connection
-    pool_recycle=POOL_RECYCLE,  # Recycle connections to prevent stale connections
-    echo=False,  # Disable SQL logging in production for performance
-    future=True,  # Use SQLAlchemy 2.0 style
+    pool_pre_ping=True,
+    pool_size=POOL_SIZE,
+    max_overflow=MAX_OVERFLOW,
+    pool_timeout=POOL_TIMEOUT,
+    pool_recycle=POOL_RECYCLE,
+    echo=False,
+    future=True,
 )
 
 # SessionLocal class for creating new sessions
@@ -69,11 +68,6 @@ def get_db() -> Generator[Session, None, None]:
     """
     Dependency injection for database sessions.
     Creates a new session for each request and closes it when done.
-
-    Usage:
-        @app.get("/items")
-        def get_items(db: Session = Depends(get_db)):
-            return db.query(Item).all()
     """
     db = SessionLocal()
     try:
