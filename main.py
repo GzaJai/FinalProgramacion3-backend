@@ -98,15 +98,10 @@ def create_fastapi_app() -> FastAPI:
     cors_origins = os.getenv("CORS_ORIGINS", "*").split(",")
     fastapi_app.add_middleware(
         CORSMiddleware,
-        # allow_origins=cors_origins if cors_origins != ["*"] else ["*"],
-        allow_origins=["*"],
-        # allow_origins=[
-        #     "http://127.0.0.1:5500",
-        #     "http://localhost:5500",
-        #     "http://127.0.0.1:8000",
-        #     "http://localhost:8000",
-        # ],
-        allow_credentials=False,
+        allow_origins=[
+            "https://final-programacion3.vercel.app",
+        ],
+        allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
