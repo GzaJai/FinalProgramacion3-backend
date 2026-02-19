@@ -48,7 +48,8 @@ def create_fastapi_app() -> FastAPI:
         description="FastAPI REST API for e-commerce system with PostgreSQL",
         version="1.0.0",
         docs_url="/docs",
-        redoc_url="/redoc"
+        redoc_url="/redoc",
+        redirect_slashes=False
     )
 
     # Global exception handlers
