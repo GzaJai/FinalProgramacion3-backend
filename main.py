@@ -49,7 +49,7 @@ def create_fastapi_app() -> FastAPI:
         version="1.0.0",
         docs_url="/docs",
         redoc_url="/redoc",
-        redirect_slashes=True
+        redirect_slashes=False
     )
 
     # Global exception handlers
